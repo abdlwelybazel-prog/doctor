@@ -1,0 +1,68 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.untitled2"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ✅ صلاحية الإنترنت مهمة لتواصل Firebase -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <application
+        android:label="صحتي"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme"
+                />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- flutter_callkit_incoming Receiver -->
+        <receiver
+            android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingBroadcastReceiver"
+            android:exported="true"
+            tools:replace="android:exported">
+            <intent-filter>
+                <action android:name="com.example.untitled2.com.hiennv.flutter_callkit_incoming.ACTION_CALL_ACCEPT"/>
+                <action android:name="com.example.untitled2.com.hiennv.flutter_callkit_incoming.ACTION_CALL_DECLINE"/>
+                <action android:name="com.example.untitled2.com.hiennv.flutter_callkit_incoming.ACTION_CALL_ENDED"/>
+                <action android:name="com.example.untitled2.com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING"/>
+                <action android:name="com.example.untitled2.com.hiennv.flutter_callkit_incoming.ACTION_CALL_TIMEOUT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- flutter_callkit_incoming Services -->
+        <service
+            android:name="com.hiennv.flutter_callkit_incoming.CallkitNotificationService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="phoneCall"
+            tools:replace="android:exported"/>
+
+        <service
+            android:name="com.hiennv.flutter_callkit_incoming.CallkitConnectionService"
+            android:exported="true"
+            android:permission="com.example.untitled2.PERMISSION_CALL"
+            tools:replace="android:exported,android:permission"/>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+
+    </application>
+
+</manifest>
