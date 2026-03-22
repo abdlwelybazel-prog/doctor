@@ -1,6 +1,9 @@
 // lib/services/appointment_notification_service.dart
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:intl/intl.dart';
@@ -17,18 +20,24 @@ class AppointmentNotificationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> initialize() async {
-    const AndroidNotificationChannel appointmentChannel = AndroidNotificationChannel(
+    final AndroidNotificationChannel appointmentChannel =
+    AndroidNotificationChannel(
       'appointment_channel',
       'تنبيهات المواعيد',
       description: 'إشعارات تذكير بمواعيد العيادة',
       importance: Importance.high,
       playSound: true,
+      sound: RawResourceAndroidNotificationSound('notification'),
+      enableVibration: true,
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
     );
 
     await _notifications
         .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(appointmentChannel);
+
+    debugPrint('✅ تم تهيئة قناة إشعارات المواعيد');
   }
 
   Future<void> scheduleAppointmentReminders(String appointmentId) async {
@@ -68,7 +77,6 @@ class AppointmentNotificationService {
       scheduledDate: appointmentDate.subtract(const Duration(hours: 1)),
     );
 
-    // تحديث حالة الإشعارات في Firebase
     await _firestore.collection('appointments').doc(appointmentId).update({
       'notified': {
         '1day': true,
@@ -84,10 +92,16 @@ class AppointmentNotificationService {
     required String body,
     required DateTime scheduledDate,
   }) async {
-    final tz.TZDateTime scheduledTzDate = tz.TZDateTime.from(scheduledDate, tz.local);
+    try {
+      final tz.TZDateTime scheduledTzDate =
+      tz.TZDateTime.from(scheduledDate, tz.local);
 
-    if (scheduledTzDate.isAfter(tz.TZDateTime.now(tz.local))) {
-      const NotificationDetails notificationDetails = NotificationDetails(
+      if (scheduledTzDate.isBefore(tz.TZDateTime.now(tz.local))) {
+        debugPrint('⚠️ الوقت المجدول في الماضي، تخطي الإشعار');
+        return;
+      }
+
+      final NotificationDetails notificationDetails = NotificationDetails(
         android: AndroidNotificationDetails(
           'appointment_channel',
           'تنبيهات المواعيد',
@@ -96,14 +110,33 @@ class AppointmentNotificationService {
           priority: Priority.high,
           playSound: true,
           enableVibration: true,
+          color: Color(0xFF2196F3),
+        ),
+        iOS: DarwinNotificationDetails(
+          sound: 'notification.caf',
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
         ),
       );
 
+      await _notifications.zonedSchedule(
+        id,
+        title,
+        body,
+        scheduledTzDate,
+        notificationDetails,
+        uiLocalNotificationDateInterpretation:
+        UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
 
+      debugPrint('✅ تم جدولة إشعار الموعد برقم $id');
+    } catch (e) {
+      debugPrint('❌ خطأ في جدولة الإشعار: $e');
     }
   }
 
-  // مراقبة المواعيد الجديدة للمستخدم
   void listenToUserAppointments(String userId) {
     _firestore
         .collection('appointments')
@@ -112,7 +145,6 @@ class AppointmentNotificationService {
         .listen((snapshot) {
       for (var doc in snapshot.docChanges) {
         if (doc.type == DocumentChangeType.added) {
-          // فلترة محلياً للتحقق من الحالة
           final status = doc.doc.data()?['status'];
           if (status == 'pending' || status == 'confirmed') {
             scheduleAppointmentReminders(doc.doc.id);

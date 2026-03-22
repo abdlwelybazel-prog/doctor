@@ -21,6 +21,7 @@ import 'package:digl/services/medication_service.dart';
 import 'package:digl/services/notification_service.dart';
 import 'package:digl/services/internet_checker_service.dart';
 import 'package:digl/services/advanced_medication_reminder_service.dart';
+import 'package:digl/services/enhanced_incoming_call_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -37,6 +38,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'Provider/auth_gate.dart';
 import 'core/config/medical_theme.dart';
 import 'core/config/theme_provider.dart';
+import 'features/admin/presentation/pages/admin_login_screen.dart';
 import 'features/auth/presentation/pages/verification_pending_screen.dart';
 import 'features/doctor/presentation/pages/doctor_dashboard_screen.dart';
 import 'features/medications/presentation/pages/medication_reminder_screen.dart';
@@ -120,6 +122,15 @@ Future<void> main() async {
 
   await AdminSetupService.ensureAdminExists();
 
+  /// ✅ تهيئة خدمة استقبال الاتصالات المحسّنة (تعمل في الخلفية)
+  try {
+    print("🔔 تهيئة خدمة استقبال الاتصالات");
+    await EnhancedIncomingCallService.initialize();
+    print("✅ خدمة الاتصالات جاهزة");
+  } catch (e) {
+    print("⚠️ تحذير: فشل تهيئة خدمة الاتصالات: $e");
+  }
+
   /// إعداد Zego
   try {
     print("🚀 تهيئة Zego");
@@ -179,7 +190,7 @@ class MyApp extends StatelessWidget {
           locale: const Locale('ar', 'SA'),
 
           home: const AuthGate(),
-
+          //AuthGate AdminLoginScreen
           routes: {
             '/login': (_) => const LoginScreen(),
             '/register': (_) => const RegisterScreen(),

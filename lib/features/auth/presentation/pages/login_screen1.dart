@@ -183,8 +183,8 @@ class _LoginScreenState extends State<LoginScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              MedicalTheme.primaryMedicalBlue.withOpacity(0.05),
-              MedicalTheme.secondaryMedicalGreen.withOpacity(0.05),
+              const Color(0xFF3A86FF).withOpacity(0.05),
+              const Color(0xFF4CC9A7).withOpacity(0.05),
             ],
           ),
         ),
@@ -205,12 +205,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 90,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [MedicalTheme.primaryMedicalBlue, MedicalTheme.secondaryMedicalGreen],
+                          colors: [Color(0xFF3A86FF), Color(0xFF4CC9A7)],
                         ),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: MedicalTheme.primaryMedicalBlue.withOpacity(0.3),
+                            color: const Color(0xFF3A86FF).withOpacity(0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: const Icon(
                         Icons.local_hospital,
-                        color: MedicalTheme.pure,
+                        color: Colors.white,
                         size: 50,
                       ),
                     ),
@@ -227,14 +227,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
 
                   // ✅ عنوان التطبيق
-                  Text(
+                  const Text(
                     'مرحباً بك في digl',
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      color: MedicalTheme.getTextColor(context),
-                    ) ?? const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: MedicalTheme.darkGray900,
+                      color: Color(0xFF1F2937),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -242,13 +240,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 8),
 
                   // ✅ الوصف الفرعي
-                  Text(
+                  const Text(
                     'منصتك الصحية الموثوقة للاستشارة الطبية',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: MedicalTheme.darkGray600,
-                    ) ?? const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
-                      color: MedicalTheme.darkGray600,
+                      color: Color(0xFF6B7280),
                       fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
@@ -262,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                       side: BorderSide(
-                        color: MedicalTheme.getBorderColor(context),
+                        color: Colors.grey[200]!,
                         width: 1,
                       ),
                     ),
@@ -319,13 +315,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                               ),
-                              child: Text(
+                              child: const Text(
                                 'نسيت كلمة المرور؟',
-                                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: MedicalTheme.primaryMedicalBlue,
-                                  fontWeight: FontWeight.w600,
-                                ) ?? const TextStyle(
-                                  color: MedicalTheme.primaryMedicalBlue,
+                                style: TextStyle(
+                                  color: Color(0xFF3A86FF),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -344,25 +337,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Expanded(
                                 child: Divider(
-                                  color: MedicalTheme.getDividerColor(context),
+                                  color: Colors.grey[300],
                                   height: 1,
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(
                                   'أم',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: MedicalTheme.darkGray500,
-                                  ) ?? const TextStyle(
-                                    color: MedicalTheme.darkGray500,
+                                  style: TextStyle(
+                                    color: Color(0xFF9CA3AF),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
                               Expanded(
                                 child: Divider(
-                                  color: MedicalTheme.getDividerColor(context),
+                                  color: Colors.grey[300],
                                   height: 1,
                                 ),
                               ),
@@ -375,12 +366,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
+                              const Text(
                                 'ليس لديك حساب؟ ',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: MedicalTheme.darkGray600,
-                                ) ?? const TextStyle(
-                                  color: MedicalTheme.darkGray600,
+                                style: TextStyle(
+                                  color: Color(0xFF6B7280),
                                   fontSize: 14,
                                 ),
                               ),
@@ -397,13 +386,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                 ),
-                                child: Text(
+                                child: const Text(
                                   'إنشاء حساب جديد',
-                                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: MedicalTheme.primaryMedicalBlue,
-                                    fontWeight: FontWeight.bold,
-                                  ) ?? const TextStyle(
-                                    color: MedicalTheme.primaryMedicalBlue,
+                                  style: TextStyle(
+                                    color: Color(0xFF3A86FF),
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
@@ -438,72 +424,66 @@ class _LoginScreenState extends State<LoginScreen> {
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: MedicalTheme.getTextColor(context),
-      ) ?? const TextStyle(
-        color: MedicalTheme.darkGray900,
+      style: const TextStyle(
+        color: Color(0xFF1F2937), // نص داكن وواضح
         fontSize: 15,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: MedicalTheme.darkGray600,
-        ) ?? const TextStyle(
-          color: MedicalTheme.darkGray600,
+        labelStyle: const TextStyle(
+          color: Color(0xFF4B5563), // رمادي داكن للـ label
           fontWeight: FontWeight.w500,
           fontSize: 14,
         ),
-        hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: MedicalTheme.darkGray500,
-        ) ?? const TextStyle(
-          color: MedicalTheme.darkGray500,
+        hintStyle: const TextStyle(
+          color: Color(0xFF9CA3AF), // رمادي فاتح للـ hint
           fontWeight: FontWeight.w400,
         ),
         prefixIcon: Icon(
           icon,
-          color: MedicalTheme.primaryMedicalBlue,
+          color: const Color(0xFF3A86FF),
           size: 20,
         ),
         filled: true,
-        fillColor: MedicalTheme.getSurfaceColor(context),
+        fillColor: const Color(0xFFF9FAFB), // أبيض بدون رمادي
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: MedicalTheme.getBorderColor(context),
+          borderSide: const BorderSide(
+            color: Color(0xFFE5E7EB),
             width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: MedicalTheme.getBorderColor(context),
+          borderSide: const BorderSide(
+            color: Color(0xFFE5E7EB),
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: MedicalTheme.primaryMedicalBlue,
+            color: Color(0xFF3A86FF),
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: MedicalTheme.dangerRed,
+            color: Color(0xFFFF6B6B),
             width: 1,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: MedicalTheme.dangerRed,
+            color: Color(0xFFFF6B6B),
             width: 2,
           ),
         ),
         errorStyle: const TextStyle(
-          color: MedicalTheme.dangerRed,
+          color: Color(0xFFFF6B6B),
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -527,80 +507,74 @@ class _LoginScreenState extends State<LoginScreen> {
       controller: controller,
       obscureText: obscureText,
       validator: validator,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        color: MedicalTheme.getTextColor(context),
-      ) ?? const TextStyle(
-        color: MedicalTheme.darkGray900,
+      style: const TextStyle(
+        color: Color(0xFF1F2937), // نص داكن وواضح
         fontSize: 15,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: MedicalTheme.darkGray600,
-        ) ?? const TextStyle(
-          color: MedicalTheme.darkGray600,
+        labelStyle: const TextStyle(
+          color: Color(0xFF4B5563), // رمادي داكن للـ label
           fontWeight: FontWeight.w500,
           fontSize: 14,
         ),
-        hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: MedicalTheme.darkGray500,
-        ) ?? const TextStyle(
-          color: MedicalTheme.darkGray500,
+        hintStyle: const TextStyle(
+          color: Color(0xFF9CA3AF), // رمادي فاتح للـ hint
           fontWeight: FontWeight.w400,
         ),
         prefixIcon: Icon(
           Icons.lock_outline,
-          color: MedicalTheme.primaryMedicalBlue,
+          color: const Color(0xFF3A86FF),
           size: 20,
         ),
         suffixIcon: IconButton(
           icon: Icon(
             obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: MedicalTheme.darkGray600,
+            color: const Color(0xFF4B5563),
             size: 20,
           ),
           onPressed: onVisibilityToggle,
         ),
         filled: true,
-        fillColor: MedicalTheme.getSurfaceColor(context),
+        fillColor: const Color(0xFFF9FAFB), // أبيض بدون رمادي
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: MedicalTheme.getBorderColor(context),
+          borderSide: const BorderSide(
+            color: Color(0xFFE5E7EB),
             width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: MedicalTheme.getBorderColor(context),
+          borderSide: const BorderSide(
+            color: Color(0xFFE5E7EB),
             width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: MedicalTheme.primaryMedicalBlue,
+            color: Color(0xFF3A86FF),
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: MedicalTheme.dangerRed,
+            color: Color(0xFFFF6B6B),
             width: 1,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(
-            color: MedicalTheme.dangerRed,
+            color: Color(0xFFFF6B6B),
             width: 2,
           ),
         ),
         errorStyle: const TextStyle(
-          color: MedicalTheme.dangerRed,
+          color: Color(0xFFFF6B6B),
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -617,12 +591,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [MedicalTheme.primaryMedicalBlue, MedicalTheme.primaryMedicalBlueDark],
+          colors: [Color(0xFF3A86FF), Color(0xFF2563EB)],
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: MedicalTheme.primaryMedicalBlue.withOpacity(0.3),
+            color: const Color(0xFF3A86FF).withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -644,7 +618,7 @@ class _LoginScreenState extends State<LoginScreen> {
           width: 22,
           child: CircularProgressIndicator(
             strokeWidth: 2.5,
-            valueColor: AlwaysStoppedAnimation<Color>(MedicalTheme.pure),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),
         )
             : const Text(
@@ -652,7 +626,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: MedicalTheme.pure,
+            color: Colors.white,
           ),
         ),
       ),

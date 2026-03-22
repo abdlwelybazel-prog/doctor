@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:digl/features/medical_profile/models/patient_symptoms_model.dart';
 import 'package:digl/features/medical_profile/services/patient_symptoms_service.dart';
-import 'package:digl/features/medical_profile/services/ai_questions_scheduler_service.dart';
 import 'package:digl/core/config/medical_theme.dart';
+import 'package:digl/services/ai_questions_service.dart';
 
 /// شاشة الأسئلة الذكية لتحديد الأعراض بعد إنشاء الحساب
 class AiSymptomQuestionsScreen extends StatefulWidget {
@@ -145,9 +145,10 @@ class _AiSymptomQuestionsScreenState extends State<AiSymptomQuestionsScreen> {
       // حفظ الأعراض في Firebase
       await PatientSymptomsService.addPatientSymptoms(symptoms);
 
-      // ✅ تحديث بيانات المستخدم لتتبع أنه أكمل الاختبار الأول
-      // استخدم الخدمة الجديدة للتحكم في ظهور الأسئلة
-      await AiQuestionsSchedulerService.markAiQuestionsAsCompleted();
+      // ✅ حفظ تاريخ ظهور أسئلة الذكاء الاصطناعي
+      // سيحفظ: ai_test_completed=true + ai_test_last_shown=now
+      // بحيث تظهر مرة أخرى بعد 10 أيام
+      await AiQuestionsService.saveAiQuestionsCompletion();
 
       _showSuccessSnackBar('✅ تم حفظ البيانات بنجاح');
 

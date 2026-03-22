@@ -5,6 +5,7 @@ import 'package:digl/core/config/medical_theme.dart';
 import 'package:digl/core/config/theme_provider.dart';
 import 'package:digl/core/config/theme_helper.dart';
 import 'package:digl/services/user_role_service.dart';
+import 'package:digl/services/logout_service.dart';
 import 'package:provider/provider.dart';
 
 /// ⚙️ صفحة الإعدادات المحترفة
@@ -134,29 +135,14 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 
-  /// ✅ دالة تسجيل الخروج
+  /// ✅ دالة تسجيل الخروج الآمنة
   Future<void> _logout() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تسجيل الخروج'),
-        content: const Text('هل تريد تسجيل الخروج من التطبيق؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await _auth.signOut();
-              if (mounted) {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              }
-            },
-            child: const Text('تسجيل خروج', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+    await LogoutService.showLogoutConfirmationDialog(
+      context,
+      title: 'تسجيل الخروج',
+      message: 'هل تريد تسجيل الخروج من التطبيق؟',
+      confirmText: 'تسجيل خروج',
+      cancelText: 'إلغاء',
     );
   }
 

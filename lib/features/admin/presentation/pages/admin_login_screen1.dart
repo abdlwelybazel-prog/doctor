@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:digl/features/admin/services/admin_service.dart';
 import 'package:digl/features/admin/presentation/pages/admin_dashboard_screen.dart';
-import 'package:digl/core/config/medical_theme.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -90,9 +89,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              MedicalTheme.primaryMedicalBlue,
-              MedicalTheme.tertiaryMedicalCyan,
-              MedicalTheme.primaryMedicalBlueDark,
+              const Color(0xFF3A86FF),
+              const Color(0xFF4CC9F0),
+              Colors.blue.shade700,
             ],
           ),
         ),
@@ -110,33 +109,29 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: MedicalTheme.pure.withOpacity(0.2),
+                          color: Colors.white.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.admin_panel_settings,
                           size: 60,
-                          color: MedicalTheme.pure,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Text(
+                      const Text(
                         'لوحة التحكم الإدارية',
-                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: MedicalTheme.pure,
-                        ) ?? const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: MedicalTheme.pure,
+                          color: Colors.white,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
-                      Text(
+                      const Text(
                         'تسجيل دخول المسؤول',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: MedicalTheme.pure.withOpacity(0.8),
-                        ) ?? const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           color: Colors.white70,
                         ),
@@ -150,7 +145,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: MedicalTheme.getSurfaceColor(context),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -170,20 +165,20 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: MedicalTheme.dangerRed.withOpacity(0.1),
+                              color: Colors.red.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: MedicalTheme.dangerRed),
+                              border: Border.all(color: Colors.red),
                             ),
                             child: Row(
                               children: [
                                 const Icon(Icons.error,
-                                    color: MedicalTheme.dangerRed, size: 20),
+                                    color: Colors.red, size: 20),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     _errorMessage!,
                                     style: const TextStyle(
-                                      color: MedicalTheme.dangerRed,
+                                      color: Colors.red,
                                       fontSize: 14,
                                     ),
                                   ),
@@ -198,16 +193,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'البريد الإلكتروني',
                             prefixIcon:
-                                const Icon(Icons.email, color: MedicalTheme.primaryMedicalBlue),
+                                const Icon(Icons.email, color: Color(0xFF3A86FF)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: MedicalTheme.getBorderColor(context), width: 1),
+                              borderSide: const BorderSide(
+                                  color: Colors.grey, width: 1),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: const BorderSide(
-                                  color: MedicalTheme.primaryMedicalBlue, width: 2),
+                                  color: Color(0xFF3A86FF), width: 2),
                             ),
                           ),
                           keyboardType: TextInputType.emailAddress,
@@ -229,26 +224,26 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'كلمة المرور',
                             prefixIcon: const Icon(Icons.lock,
-                                color: MedicalTheme.primaryMedicalBlue),
+                                color: Color(0xFF3A86FF)),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: MedicalTheme.primaryMedicalBlue,
+                                color: const Color(0xFF3A86FF),
                               ),
                               onPressed: () => setState(
                                   () => _obscurePassword = !_obscurePassword),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: MedicalTheme.getBorderColor(context), width: 1),
+                              borderSide: const BorderSide(
+                                  color: Colors.grey, width: 1),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: const BorderSide(
-                                  color: MedicalTheme.primaryMedicalBlue, width: 2),
+                                  color: Color(0xFF3A86FF), width: 2),
                             ),
                           ),
                           obscureText: _obscurePassword,
@@ -267,7 +262,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         ElevatedButton(
                           onPressed: _isLoading ? null : _loginAdmin,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: MedicalTheme.primaryMedicalBlue,
+                            backgroundColor: const Color(0xFF3A86FF),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -281,7 +276,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        MedicalTheme.pure),
+                                        Colors.white),
                                   ),
                                 )
                               : const Text(
@@ -289,7 +284,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: MedicalTheme.pure,
+                                    color: Colors.white,
                                   ),
                                 ),
                         ),
@@ -303,7 +298,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   child: Text(
                     'لا تملك حساب مسؤول؟\nتواصل مع فريق الدعم',
                     style: TextStyle(
-                      color: MedicalTheme.pure.withOpacity(0.8),
+                      color: Colors.white.withOpacity(0.8),
                       fontSize: 14,
                     ),
                     textAlign: TextAlign.center,

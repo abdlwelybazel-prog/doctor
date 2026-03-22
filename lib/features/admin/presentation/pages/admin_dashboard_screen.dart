@@ -25,20 +25,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: _buildAppBar(),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(theme),
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          _buildDashboardContent(),
+          _buildDashboardContent(theme),
           const DoctorRequestsScreen(),
-          _buildSettingsContent(),
+          _buildSettingsContent(theme),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: const Color(0xFF3A86FF),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: theme.primaryColor,
+        unselectedItemColor: theme.disabledColor,
+        backgroundColor: theme.bottomNavigationBarTheme.backgroundColor ?? theme.cardColor,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(
@@ -58,13 +62,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(ThemeData theme) {
     return AppBar(
-      backgroundColor: const Color(0xFF3A86FF),
+      backgroundColor: theme.primaryColor,
       foregroundColor: Colors.white,
       title: const Text('لوحة التحكم الإدارية'),
       centerTitle: true,
-      elevation: 0,
+      elevation: 4,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+      ),
       actions: [
         IconButton(
           icon: const Icon(Icons.notifications),
@@ -78,7 +85,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildDashboardContent() {
+  Widget _buildDashboardContent(ThemeData theme) {
     return FutureBuilder<AdminStats>(
       future: _statsFuture,
       builder: (context, snapshot) {
@@ -93,7 +100,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 const Icon(Icons.error, color: Colors.red, size: 64),
                 const SizedBox(height: 16),
-                const Text('حدث خطأ في تحميل البيانات'),
+                const Text('حدث خطأ في تحميل البيانات', style: TextStyle(fontSize: 16)),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () {
@@ -101,7 +108,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       _statsFuture = AdminService.getAdminStats();
                     });
                   },
-                  child: const Text('إعادة المحاولة'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.primaryColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: const Text('إعادة المحاولة', style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
@@ -109,7 +120,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         }
 
         final stats = snapshot.data!;
-
         return RefreshIndicator(
           onRefresh: () async {
             setState(() {
@@ -118,18 +128,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             await _statsFuture;
           },
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
             physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildWelcomeCard(),
+                _buildWelcomeCard(theme),
                 const SizedBox(height: 24),
-                _buildStatsGrid(stats),
+                _buildStatsGrid(stats, theme),
                 const SizedBox(height: 24),
-                _buildPendingRequestsCard(stats),
+                _buildPendingRequestsCard(stats, theme),
                 const SizedBox(height: 24),
-                _buildQuickActionsCard(),
+                _buildQuickActionsCard(theme),
               ],
             ),
           ),
@@ -138,174 +148,135 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildWelcomeCard() {
+  Widget _buildWelcomeCard(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [theme.primaryColor, theme.colorScheme.secondary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: theme.primaryColor.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.admin_panel_settings, color: Colors.white, size: 36),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'مرحباً، ${widget.admin.fullName}',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'دورك: ${widget.admin.role == 'super_admin' ? 'مسؤول عام' : 'مسؤول'}',
+                  style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid(AdminStats stats, ThemeData theme) {
+    final cardColors = [
+      Colors.blueAccent,
+      Colors.orangeAccent,
+      Colors.greenAccent,
+      Colors.purpleAccent,
+      Colors.tealAccent,
+      Colors.amberAccent,
+    ];
+
+    final statsList = [
+      {'title': 'إجمالي الأطباء', 'value': stats.totalDoctors.toString(), 'icon': Icons.local_hospital, 'color': cardColors[0]},
+      {'title': 'طلبات معلقة', 'value': stats.pendingRequests.toString(), 'icon': Icons.assignment_ind, 'color': cardColors[1]},
+      {'title': 'أطباء موافق عليهم', 'value': stats.approvedDoctors.toString(), 'icon': Icons.verified_user, 'color': cardColors[2]},
+      {'title': 'إجمالي المرضى', 'value': stats.totalPatients.toString(), 'icon': Icons.people, 'color': cardColors[3]},
+      {'title': 'المواعيد الإجمالية', 'value': stats.totalAppointments.toString(), 'icon': Icons.calendar_today, 'color': cardColors[4]},
+      {'title': 'متوسط التقييم', 'value': stats.averageDoctorRating.toStringAsFixed(1), 'icon': Icons.star, 'color': cardColors[5]},
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 1.1,
+      ),
+      itemCount: statsList.length,
+      itemBuilder: (context, index) {
+        final item = statsList[index];
+        return Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: (item['color'] as Color).withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 30),
+                ),
+                const SizedBox(height: 14),
+                Text(item['value'] as String, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Text(item['title'] as String,
+                    style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7)),
+                    textAlign: TextAlign.center),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
+  Widget _buildPendingRequestsCard(AdminStats stats, ThemeData theme) {
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: const Color(0xFF3A86FF),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.orange.withOpacity(0.1),
+      shadowColor: Colors.orange.withOpacity(0.4),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.admin_panel_settings,
-                      color: Colors.white, size: 32),
+                  child: const Icon(Icons.warning_amber, color: Colors.white, size: 28),
                 ),
                 const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'مرحباً، ${widget.admin.fullName}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'دورك: ${widget.admin.role == 'super_admin' ? 'مسؤول عام' : 'مسؤول'}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid(AdminStats stats) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      children: [
-        _buildStatCard(
-          title: 'إجمالي الأطباء',
-          value: stats.totalDoctors.toString(),
-          icon: Icons.local_hospital,
-          color: Colors.blue,
-        ),
-        _buildStatCard(
-          title: 'طلبات معلقة',
-          value: stats.pendingRequests.toString(),
-          icon: Icons.assignment_ind,
-          color: Colors.orange,
-        ),
-        _buildStatCard(
-          title: 'أطباء موافق عليهم',
-          value: stats.approvedDoctors.toString(),
-          icon: Icons.verified_user,
-          color: Colors.green,
-        ),
-        _buildStatCard(
-          title: 'إجمالي المرضى',
-          value: stats.totalPatients.toString(),
-          icon: Icons.people,
-          color: Colors.purple,
-        ),
-        _buildStatCard(
-          title: 'المواعيد الإجمالية',
-          value: stats.totalAppointments.toString(),
-          icon: Icons.calendar_today,
-          color: Colors.teal,
-        ),
-        _buildStatCard(
-          title: 'متوسط التقييم',
-          value: stats.averageDoctorRating.toStringAsFixed(1),
-          icon: Icons.star,
-          color: Colors.amber,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPendingRequestsCard(AdminStats stats) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: Colors.orange.withOpacity(0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.orange,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.warning_amber,
-                      color: Colors.white, size: 24),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,15 +284,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       const Text(
                         'طلبات معلقة',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         'يوجد ${stats.pendingRequests} طلب يحتاج إلى مراجعة',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                          fontSize: 14,
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                         ),
                       ),
                     ],
@@ -329,18 +301,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  setState(() => _currentIndex = 1);
-                },
+                onPressed: () => setState(() => _currentIndex = 1),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('عرض الطلبات'),
+                child: const Text('عرض الطلبات', style: TextStyle(fontSize: 16)),
               ),
             ),
           ],
@@ -349,58 +321,51 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildQuickActionsCard() {
+  Widget _buildQuickActionsCard(ThemeData theme) {
+    final actions = [
+      {'icon': Icons.assignment_ind, 'label': 'الطلبات', 'color': Colors.blueAccent, 'tap': () => setState(() => _currentIndex = 1)},
+      {'icon': Icons.person_add, 'label': 'إضافة مسؤول', 'color': Colors.greenAccent, 'tap': () => _showComingSoon()},
+      {'icon': Icons.analytics, 'label': 'التقارير', 'color': Colors.purpleAccent, 'tap': () => _showComingSoon()},
+    ];
+
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
               'إجراءات سريعة',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             GridView.count(
               crossAxisCount: 3,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              children: [
-                _buildActionButton(
-                  icon: Icons.assignment_ind,
-                  label: 'الطلبات',
-                  onTap: () => setState(() => _currentIndex = 1),
-                ),
-                _buildActionButton(
-                  icon: Icons.person_add,
-                  label: 'إضافة مسؤول',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('هذه الميزة قريباً...'),
-                      ),
-                    );
-                  },
-                ),
-                _buildActionButton(
-                  icon: Icons.analytics,
-                  label: 'التقارير',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('هذه الميزة قريباً...'),
-                      ),
-                    );
-                  },
-                ),
-              ],
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              children: actions.map((action) {
+                return ElevatedButton(
+                  onPressed: action['tap'] as VoidCallback,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: action['color'] as Color,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(action['icon'] as IconData, size: 28),
+                      const SizedBox(height: 8),
+                      Text(action['label'] as String, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),
@@ -408,42 +373,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: const Color(0xFF3A86FF), size: 28),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+  void _showComingSoon() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('هذه الميزة قريباً...'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
 
-  Widget _buildSettingsContent() {
+  Widget _buildSettingsContent(ThemeData theme) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         const SizedBox(height: 16),
         Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 3,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -451,40 +397,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 const Text(
                   'معلومات الحساب',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
-                _buildInfoRow('الاسم', widget.admin.fullName),
-                _buildInfoRow('البريد الإلكتروني', widget.admin.email),
-                _buildInfoRow('رقم الهاتف', widget.admin.phoneNumber),
+                _buildInfoRow('الاسم', widget.admin.fullName, theme),
+                _buildInfoRow('البريد الإلكتروني', widget.admin.email, theme),
+                _buildInfoRow('رقم الهاتف', widget.admin.phoneNumber, theme),
                 _buildInfoRow(
                   'الدور',
                   widget.admin.role == 'super_admin' ? 'مسؤول عام' : 'مسؤول',
+                  theme,
                 ),
               ],
             ),
           ),
         ),
         const SizedBox(height: 24),
-        // زر تسجيل الخروج
         ElevatedButton.icon(
           onPressed: _logout,
           icon: const Icon(Icons.logout),
           label: const Text('تسجيل الخروج'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.redAccent,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String value, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -494,10 +438,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             flex: 1,
             child: Text(
               label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600, color: theme.disabledColor),
             ),
           ),
           Expanded(
@@ -510,6 +451,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ],
       ),
     );
+
   }
 
   void _showAdminProfile() {

@@ -108,6 +108,7 @@ import 'package:digl/features/medical_profile/services/medical_profile_service.d
 import 'package:digl/features/medical_profile/services/patient_symptoms_service.dart';
 import 'package:digl/services/zego_call_service.dart';
 import 'package:digl/services/zego_incoming_call_handler.dart';
+import 'package:digl/services/ai_questions_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
@@ -305,29 +306,45 @@ class _AuthGateState extends State<AuthGate> {
 
             // للمريض: التحقق من الأعراض الأولية والملف الصحي
             if (accountType == 'patient') {
-              // ✅ التحقق من ما إذا كان المريض قد أكمل اختبار الذكاء الاصطناعي الأول
-              final aiTestCompleted = userData['ai_test_completed'] as bool? ?? false;
-
-              if (!aiTestCompleted) {
-                // إذا لم يكمل الاختبار، اعرض شاشة الاختبار
-                return const AiSymptomQuestionsScreen();
-              }
-
-              // إذا أكمل الاختبار، تحقق من الملف الصحي
+              // ✅ التحقق من ما إذا كان يجب عرض أسئلة الذكاء الاصطناعي
+              // الخدمة تتحقق من:
+              // 1. إذا لم يكملها بعد (ai_test_completed = false)
+              // 2. إذا مضى 10 أيام منذ آخر ظهور
               return FutureBuilder<bool>(
-                future: MedicalProfileService.hasHealthProfile(),
-                builder: (context, profileSnapshot) {
-                  if (profileSnapshot.connectionState == ConnectionState.waiting) {
+                future: AiQuestionsService.shouldShowAiQuestions(),
+                builder: (context, aiQuestionSnapshot) {
+                  if (aiQuestionSnapshot.connectionState == ConnectionState.waiting) {
                     return _buildLoadingScreen();
                   }
-                  if (profileSnapshot.hasError) {
-                    return _buildErrorScreen('حدث خطأ أثناء التحقق من الملف الصحي.');
+
+                  if (aiQuestionSnapshot.hasError) {
+                    return _buildErrorScreen('حدث خطأ أثناء التحقق من أسئلة الذكاء الاصطناعي.');
                   }
-                  final hasProfile = profileSnapshot.data ?? false;
-                  if (!hasProfile) {
-                    return const HealthQuestionsScreen();
+
+                  final shouldShowAiQuestions = aiQuestionSnapshot.data ?? false;
+
+                  if (shouldShowAiQuestions) {
+                    // إذا كان يجب عرض أسئلة الذكاء الاصطناعي، اعرضها
+                    return const AiSymptomQuestionsScreen();
                   }
-                  return const HomeScreen();
+
+                  // إذا لم نحتج لعرض الأسئلة، تحقق من الملف الصحي
+                  return FutureBuilder<bool>(
+                    future: MedicalProfileService.hasHealthProfile(),
+                    builder: (context, profileSnapshot) {
+                      if (profileSnapshot.connectionState == ConnectionState.waiting) {
+                        return _buildLoadingScreen();
+                      }
+                      if (profileSnapshot.hasError) {
+                        return _buildErrorScreen('حدث خطأ أثناء التحقق من الملف الصحي.');
+                      }
+                      final hasProfile = profileSnapshot.data ?? false;
+                      if (!hasProfile) {
+                        return const HealthQuestionsScreen();
+                      }
+                      return const HomeScreen();
+                    },
+                  );
                 },
               );
             }

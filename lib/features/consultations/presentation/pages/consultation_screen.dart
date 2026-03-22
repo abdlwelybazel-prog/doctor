@@ -10,6 +10,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 import 'dart:io';
 import '../../../../core/config/medical_theme.dart';
+import '../widgets/message_reactions_widget.dart';
 
 class ConsultationScreen extends StatefulWidget {
   final String consultationId;
@@ -1485,6 +1486,15 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                                   _buildStatusIcon(status, isMe, theme),
                                 ],
                               ],
+                            ),
+                          ),
+                          // ========== التفاعلات على الرسالة ==========
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: MessageReactionsWidget(
+                              consultationId: widget.consultationId,
+                              messageId: msgId,
                             ),
                           ),
                         ],
