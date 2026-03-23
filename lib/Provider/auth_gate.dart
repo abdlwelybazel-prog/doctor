@@ -97,7 +97,7 @@
 //     );
 //   }
 // }
-import 'dart:async'; // تأكد من إضافة هذا الاستيراد:cite[1]
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:digl/Provider/underReviewScreen.dart';
 import 'package:digl/features/auth/presentation/pages/login_screen.dart';
@@ -107,6 +107,7 @@ import 'package:digl/features/medical_profile/presentation/pages/ai_symptom_ques
 import 'package:digl/features/medical_profile/services/medical_profile_service.dart';
 import 'package:digl/features/medical_profile/services/patient_symptoms_service.dart';
 import 'package:digl/services/zego_call_service.dart';
+import 'package:digl/services/zego_incoming_call_handler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
@@ -114,18 +115,22 @@ import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../services/connectivity_service.dart';
 
-/// تهيئة Zego عند الحاجة
+/// ✅ تهيئة Zego عند الحاجة
+/// هذه الدالة تقوم بـ:
+/// 1. تهيئة خدمة المكالمات من Zego
+/// 2. تهيئة معالج المكالمات الواردة
+/// 3. التحقق من الاتصال بالإنترنت
 Future<void> initZegoIfNeeded({
   required String userID,
   required String userName,
 }) async {
-  // تخطي إذا كانت Zego مهيأة بالفعل
+  // ✅ تخطي إذا كانت Zego مهيأة بالفعل
   if (ZegoCallService.isInitialized) {
     print('✅ Zego مهيأ بالفعل');
     return;
   }
 
-  // التحقق من الاتصال بالإنترنت
+  // ✅ التحقق من الاتصال بالإنترنت
   final isConnected = await ConnectivityService.isConnected();
   if (!isConnected) {
     print('⚠️ لا يوجد اتصال - تخطي تهيئة Zego');
@@ -134,7 +139,7 @@ Future<void> initZegoIfNeeded({
 
   print('🔄 جاري تهيئة Zego لـ $userID...');
 
-  // تهيئة Zego باستخدام الخدمة المحسّنة
+  // ✅ تهيئة Zego باستخدام الخدمة المحسّنة
   final initialized = await ZegoCallService.initialize(
     userID: userID,
     userName: userName,
@@ -142,6 +147,15 @@ Future<void> initZegoIfNeeded({
 
   if (initialized) {
     print('✅ تم تهيئة خدمة Zego بنجاح');
+
+    // ✅ تهيئة معالج المكالمات الواردة
+    try {
+      await ZegoIncomingCallHandler.initialize();
+      print('✅ تم تهيئة معالج المكالمات الواردة');
+    } catch (e) {
+      print('⚠️ تحذير: فشل تهيئة معالج المكالمات: $e');
+    }
+
     // ⏱️ انتظر قليلاً لضمان الاتصال الكامل
     await Future.delayed(const Duration(seconds: 1));
   } else {

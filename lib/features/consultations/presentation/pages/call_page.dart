@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
-class CallPage extends StatelessWidget {
+class CallPage extends StatefulWidget {
   final String callID;
   final String doctorID;
   final String patientID;
@@ -20,41 +20,56 @@ class CallPage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final userID = isDoctor ? doctorID : patientID;
+  State<CallPage> createState() => _CallPageState();
+}
 
-    /// إعداد نوع المكالمة
-    final ZegoUIKitPrebuiltCallConfig config = isVideoCall
+class _CallPageState extends State<CallPage> {
+  late ZegoUIKitPrebuiltCallConfig _config;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupCallConfig();
+  }
+  void _setupCallConfig() {
+    _config = widget.isVideoCall
         ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
         : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall();
 
-    /// إعدادات إضافية
-    if (isVideoCall) {
-      config
-        ..turnOnCameraWhenJoining = true
-        ..turnOnMicrophoneWhenJoining = true
-        ..useSpeakerWhenJoining = true;
+    _config.turnOnCameraWhenJoining = widget.isVideoCall;
+    _config.turnOnMicrophoneWhenJoining = true;
+    _config.useSpeakerWhenJoining = true;
 
-      config.layout = ZegoLayout.pictureInPicture();
-    } else {
-      config
-        ..turnOnMicrophoneWhenJoining = true
-        ..useSpeakerWhenJoining = true;
-    }
+    _config.topMenuBarConfig.buttons = [
+      ZegoMenuBarButtonName.switchCameraButton,
+      ZegoMenuBarButtonName.toggleCameraButton,
+    ];
+
+    _config.bottomMenuBarConfig.buttons = [
+      ZegoMenuBarButtonName.toggleMicrophoneButton,
+      if (widget.isVideoCall) ZegoMenuBarButtonName.toggleCameraButton,
+      ZegoMenuBarButtonName.hangUpButton,
+      ZegoMenuBarButtonName.switchAudioOutputButton,
+    ];
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
+
+    final userID = widget.isDoctor ? widget.doctorID : widget.patientID;
 
     return WillPopScope(
-      onWillPop: () async {
-        /// منع الخروج بزر الرجوع أثناء المكالمة
-        return false;
-      },
+      onWillPop: () async => false,
       child: ZegoUIKitPrebuiltCall(
-        appID: 1893786539,
+        appID: 1335900570,
         appSign:
-        '7cf95f462dec2227c9fcd59050b2859891128852ad1a5843f1295779b39706b5',
+        '412035e8ee25f60dcc716b5ba608090d3d4f727320b08ccfc44e4f565867f1c3',
         userID: userID,
-        userName: userName,
-        callID: callID,
-        config: config,
+        userName: widget.userName,
+        callID: widget.callID,
+        config: _config,
       ),
     );
   }

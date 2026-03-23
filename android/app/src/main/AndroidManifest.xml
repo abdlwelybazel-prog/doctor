@@ -2,9 +2,27 @@
     package="com.example.untitled2"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ✅ صلاحية الإنترنت مهمة لتواصل Firebase -->
+    <!-- الإنترنت -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- الميكروفون -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <!-- الكاميرا -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <!-- تشغيل مكالمة في الخلفية -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <!-- إظهار نافذة فوق التطبيقات (Incoming call) -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
+    <!-- تعديل الصوت -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+
+    <!-- قراءة حالة الهاتف -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
     <application
         android:label="صحتي"
         android:name="${applicationName}"
@@ -35,6 +53,7 @@
             android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingBroadcastReceiver"
             android:exported="true"
             tools:replace="android:exported">
+
             <intent-filter>
                 <action android:name="com.example.untitled2.com.hiennv.flutter_callkit_incoming.ACTION_CALL_ACCEPT"/>
                 <action android:name="com.example.untitled2.com.hiennv.flutter_callkit_incoming.ACTION_CALL_DECLINE"/>
@@ -45,7 +64,7 @@
             </intent-filter>
         </receiver>
 
-        <!-- flutter_callkit_incoming Services -->
+        <!-- Service للإشعار -->
         <service
             android:name="com.hiennv.flutter_callkit_incoming.CallkitNotificationService"
             android:enabled="true"
@@ -53,6 +72,7 @@
             android:foregroundServiceType="phoneCall"
             tools:replace="android:exported"/>
 
+        <!-- Service الاتصال -->
         <service
             android:name="com.hiennv.flutter_callkit_incoming.CallkitConnectionService"
             android:exported="true"

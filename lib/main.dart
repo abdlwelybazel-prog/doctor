@@ -1,6 +1,8 @@
 import 'package:digl/features/auth/presentation/pages/login_screen.dart';
 import 'package:digl/features/auth/presentation/pages/register_screen.dart';
 import 'package:digl/features/consultations/presentation/pages/consultation_screen.dart';
+import 'package:digl/features/consultations/presentation/pages/incoming_call_screen.dart';
+import 'package:digl/features/consultations/presentation/pages/call_page.dart';
 import 'package:digl/features/home/presentation/pages/home_screen.dart';
 import 'package:digl/features/medications/presentation/pages/medications_screen.dart';
 import 'package:digl/features/medical_records/presentation/pages/medical_records_screen.dart';
@@ -195,6 +197,7 @@ class MyApp extends StatelessWidget {
           },
 
           onGenerateRoute: (settings) {
+            // ✅ شاشة الاستشارة
             if (settings.name == '/consultation') {
               final args = settings.arguments as Map<String, dynamic>?;
 
@@ -209,6 +212,43 @@ class MyApp extends StatelessWidget {
                     doctorImage: args['doctorImage'],
                     userImage: args['userImage'],
                     isDoctor: args['isDoctor'],
+                  ),
+                );
+              }
+            }
+
+            // ✅ شاشة المكالمة الواردة
+            if (settings.name == '/incoming_call') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              if (args != null) {
+                return MaterialPageRoute(
+                  fullscreenDialog: true,
+                  builder: (_) => IncomingCallScreen(
+                    callID: args['callID'] ?? '',
+                    callerID: args['callerID'] ?? '',
+                    callerName: args['callerName'] ?? 'متصل',
+                    callerImage: args['callerImage'],
+                    isVideoCall: args['isVideoCall'] ?? true,
+                    doctorID: args['doctorID'] ?? '',
+                    patientID: args['patientID'] ?? '',
+                  ),
+                );
+              }
+            }
+
+            // ✅ شاشة المكالمة
+            if (settings.name == '/call') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              if (args != null) {
+                return MaterialPageRoute(
+                  fullscreenDialog: true,
+                  builder: (_) => CallPage(
+                    callID: args['callID'] ?? '',
+                    doctorID: args['doctorID'] ?? '',
+                    patientID: args['patientID'] ?? '',
+                    isDoctor: args['isDoctor'] ?? true,
+                    userName: args['userName'] ?? 'User',
+                    isVideoCall: args['isVideoCall'] ?? true,
                   ),
                 );
               }

@@ -38,6 +38,9 @@ class ConsultationScreen extends StatefulWidget {
 }
 
 class _ConsultationScreenState extends State<ConsultationScreen> {
+  // ✅ Logging Tag
+  static const String _logTag = '💬 [Consultation Screen]';
+
   // Controllers
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -72,11 +75,11 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
   @override
   void initState() {
     super.initState();
+    _logInfo('📱 تم فتح شاشة الاستشارة');
+    _logDebug('معرف الاستشارة: ${widget.consultationId}');
     _initializeChat();
-    _updateSeenStatus(); // إضافة هذا السطر
-    _updateLastSeenTime(); // إضافة هذا السطر
-
-
+    _updateSeenStatus();
+    _updateLastSeenTime();
   }
 
   // عند ظهور الشاشة
@@ -87,10 +90,12 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
   }
 
   void _initializeChat() {
+    _logDebug('جاري تهيئة المحادثة...');
     _loadUsersData();
     _markDeliveredMessages();
     _setupRealTimeUpdates();
     _scrollController.addListener(_scrollListener);
+    _logSuccess('✅ تم تهيئة المحادثة');
   }
 
   void _scrollListener() {
@@ -106,6 +111,10 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
 
   Future<void> _loadUsersData() async {
     try {
+      _logDebug('📥 جاري تحميل بيانات المستخدمين...');
+      _logDebug('الطبيب UID: ${widget.doctorUid}');
+      _logDebug('المريض UID: ${widget.patientUid}');
+
       final doctorSnap = await _firestore.collection('users').doc(widget.doctorUid).get();
       final patientSnap = await _firestore.collection('users').doc(widget.patientUid).get();
 
@@ -114,8 +123,11 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           doctorData = doctorSnap.data();
           patientData = patientSnap.data();
         });
+
+        _logSuccess('✅ تم تحميل بيانات المستخدمين بنجاح');
       }
     } catch (e) {
+      _logError('فشل تحميل بيانات المستخدم: $e');
       _showErrorSnackbar('فشل في تحميل بيانات المستخدم');
     }
   }
@@ -613,11 +625,23 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
   /// ✅ بدء مكالمة فيديو
   Future<void> _initiateVideoCall(BuildContext context) async {
     try {
+      _logInfo('📹 محاولة بدء مكالمة فيديو...');
+      _logDebug('⏳ جاري التحقق من الجاهزية...');
+
+      // تأخير صغير لضمان تهيئة Zego بشكل كامل
+      await Future.delayed(const Duration(milliseconds: 500));
+
       if (widget.isDoctor) {
+        _logDebug('👨‍⚕️ الدور: طبيب');
         if (patientData == null) {
-          _showErrorSnackbar('بيانات المريض غير متوفرة');
+          _logError('❌ بيانات المريض غير متوفرة');
+          _showErrorSnackbar('خطأ: بيانات المريض غير متوفرة');
           return;
         }
+
+        _logDebug('📱 المستقبل: ${widget.patientName}');
+        _logDebug('🔑 معرف المكالمة: ${widget.consultationId}');
+
         await ZegoUIKitPrebuiltCallInvitationService().send(
           invitees: [
             ZegoCallUser(
@@ -629,10 +653,16 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           callID: widget.consultationId,
         );
       } else {
+        _logDebug('👤 الدور: مريض');
         if (doctorData == null) {
-          _showErrorSnackbar('بيانات الطبيب غير متوفرة');
+          _logError('❌ بيانات الطبيب غير متوفرة');
+          _showErrorSnackbar('خطأ: بيانات الطبيب غير متوفرة');
           return;
         }
+
+        _logDebug('📱 المستقبل: ${widget.doctorName}');
+        _logDebug('🔑 معرف المكالمة: ${widget.consultationId}');
+
         await ZegoUIKitPrebuiltCallInvitationService().send(
           invitees: [
             ZegoCallUser(
@@ -644,21 +674,44 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           callID: widget.consultationId,
         );
       }
-      _showSuccessSnackbar('تم إرسال دعوة مكالمة فيديو');
+
+      _logSuccess('✅ تم إرسال دعوة مكالمة فيديو بنجاح! في انتظار الرد...');
+      _showSuccessSnackbar('✅ تم إرسال الدعوة\n⏳ في انتظار رد المستقبل...');
     } catch (e) {
-      debugPrint('خطأ في بدء مكالمة فيديو: $e');
-      _showErrorSnackbar('فشل إرسال دعوة المكالمة الفيديو');
+      _logError('❌ خطأ في بدء مكالمة فيديو: $e');
+      String errorMsg = 'فشل إرسال الدعوة';
+
+      // معالجة خاصة للأخطاء
+      if (e.toString().contains('107026')) {
+        errorMsg = '❌ المستقبل غير متاح\n\nتأكد من تسجيله الدخول';
+      } else if (e.toString().contains('timeout')) {
+        errorMsg = '⏱️ انتهت مهلة الزمن\nحاول مجدداً';
+      }
+
+      _showErrorSnackbar(errorMsg);
     }
   }
 
   /// ✅ بدء مكالمة صوتية
   Future<void> _initiateAudioCall(BuildContext context) async {
     try {
+      _logInfo('📞 محاولة بدء مكالمة صوتية...');
+      _logDebug('⏳ جاري التحقق من الجاهزية...');
+
+      // تأخير صغير لضمان تهيئة Zego بشكل كامل
+      await Future.delayed(const Duration(milliseconds: 500));
+
       if (widget.isDoctor) {
+        _logDebug('👨‍⚕️ الدور: طبيب');
         if (patientData == null) {
-          _showErrorSnackbar('بيانات المريض غير متوفرة');
+          _logError('❌ بيانات المريض غير متوفرة');
+          _showErrorSnackbar('خطأ: بيانات المريض غير متوفرة');
           return;
         }
+
+        _logDebug('📱 المستقبل: ${widget.patientName}');
+        _logDebug('🔑 معرف المكالمة: ${widget.consultationId}');
+
         await ZegoUIKitPrebuiltCallInvitationService().send(
           invitees: [
             ZegoCallUser(
@@ -670,10 +723,16 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           callID: widget.consultationId,
         );
       } else {
+        _logDebug('👤 الدور: مريض');
         if (doctorData == null) {
-          _showErrorSnackbar('بيانات الطبيب غير متوفرة');
+          _logError('❌ بيانات الطبيب غير متوفرة');
+          _showErrorSnackbar('خطأ: بيانات الطبيب غير متوفرة');
           return;
         }
+
+        _logDebug('📱 المستقبل: ${widget.doctorName}');
+        _logDebug('🔑 معرف المكالمة: ${widget.consultationId}');
+
         await ZegoUIKitPrebuiltCallInvitationService().send(
           invitees: [
             ZegoCallUser(
@@ -685,10 +744,21 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           callID: widget.consultationId,
         );
       }
-      _showSuccessSnackbar('تم إرسال دعوة مكالمة صوتية');
+
+      _logSuccess('✅ تم إرسال دعوة مكالمة صوتية بنجاح! في انتظار الرد...');
+      _showSuccessSnackbar('✅ تم إرسال الدعوة\n⏳ في انتظار رد المستقبل...');
     } catch (e) {
-      debugPrint('خطأ في بدء مكالمة صوتية: $e');
-      _showErrorSnackbar('فشل إرسال دعوة المكالمة الصوتية');
+      _logError('❌ خطأ في بدء مكالمة صوتية: $e');
+      String errorMsg = 'فشل إرسال الدعوة';
+
+      // معالجة خاصة للأخطاء
+      if (e.toString().contains('107026')) {
+        errorMsg = '❌ المستقبل غير متاح\n\nتأكد من تسجيله الدخول';
+      } else if (e.toString().contains('timeout')) {
+        errorMsg = '⏱️ انتهت مهلة الزمن\nحاول مجدداً';
+      }
+
+      _showErrorSnackbar(errorMsg);
     }
   }
 
@@ -979,76 +1049,132 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // زر المرفقات
+              // ========== زر المرفقات المحسّن ==========
               Container(
-                margin: const EdgeInsets.only(right: 8),
+                margin: const EdgeInsets.only(right: 8, bottom: 2),
                 decoration: BoxDecoration(
                   color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
                   borderRadius: BorderRadius.circular(40),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: IconButton(
-                  icon: Icon(Icons.attach_file_outlined,
-                      color: theme.primaryColor),
-                  onPressed: () => _showAttachmentMenu(context),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _showAttachmentMenu(context),
+                    borderRadius: BorderRadius.circular(40),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.attach_file_rounded,
+                        color: Color(0xFF2E5CB8),
+                        size: 24,
+                      ),
+                    ),
+                  ),
                 ),
               ),
 
-              SizedBox(width: 8,),
-              // مربع الإدخال
+              const SizedBox(width: 8),
+
+              // ========== مربع الإدخال المحسّن ==========
               Expanded(
                 child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
                     borderRadius: borderRadius,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
                       Expanded(
                         child: TextField(
                           controller: _messageController,
-                          textInputAction: TextInputAction.send,
+                          textInputAction: TextInputAction.newline,
                           maxLines: null,
+                          minLines: 1,
                           keyboardType: TextInputType.multiline,
                           decoration: InputDecoration(
                             hintText: 'اكتب رسالة...',
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 10),
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                             hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.disabledColor.withOpacity(0.7),
+                              color: theme.disabledColor.withOpacity(0.5),
+                              fontWeight: FontWeight.normal,
                             ),
                           ),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: isDarkMode ? Colors.white : Colors.black87,
                           ),
-                          onSubmitted: (_) => _sendMessage(),
+                          onChanged: (value) {
+                            setState(() {}); // تحديث لتغيير حالة الزر
+                          },
+                          onSubmitted: (_) {
+                            if (!isSending && _messageController.text.isNotEmpty) {
+                              _sendMessage();
+                            }
+                          },
                         ),
                       ),
 
-                      // زر الإرسال
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        child: isSending
-                            ? Padding(
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(
-                                  theme.primaryColor),
+                      // ========== زر الإرسال الواضح والمحسّن ==========
+                      Container(
+                        margin: const EdgeInsets.only(left: 4),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, animation) {
+                            return ScaleTransition(scale: animation, child: child);
+                          },
+                          child: isSending
+                              ? Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation(
+                                  theme.primaryColor,
+                                ),
+                              ),
+                            ),
+                          )
+                              : Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              key: const ValueKey("send_button"),
+                              onTap: _messageController.text.isEmpty
+                                  ? null
+                                  : _sendMessage,
+                              borderRadius: BorderRadius.circular(20),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  Icons.send_rounded,
+                                  color: _messageController.text.isEmpty
+                                      ? theme.disabledColor
+                                      : theme.primaryColor,
+                                  size: 20,
+                                  weight: 24,
+                                ),
+                              ),
                             ),
                           ),
-                        )
-                            : IconButton(
-                          key: const ValueKey("send_button"),
-                          icon: Icon(Icons.send,
-                              color: theme.primaryColor, size: 24),
-                          onPressed: _sendMessage,
                         ),
                       ),
                     ],
@@ -1273,74 +1399,114 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
               }
             },
             child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 4),
-              child: Align(
-                key: _messageKeys[msgId],
-                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.8,
-                  ),
-                  child: Column(
-                    crossAxisAlignment:
-                    isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: isHighlighted
-                              ? theme.primaryColor.withOpacity(0.2)
-                              : isMe
-                              ? them.primary
-                              : isDarkMode
-                              ? Colors.grey[800]
-                              : Colors.white,
-                          borderRadius: BorderRadius.only(
-                            topLeft: const Radius.circular(16),
-                            topRight: const Radius.circular(16),
-                            bottomLeft: Radius.circular(isMe ? 16 : 4),
-                            bottomRight: Radius.circular(isMe ? 4 : 16),
-                          ),
-                          boxShadow: [
-                            if (!isDarkMode && !isMe)
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 3,
-                                offset: const Offset(0, 1),
+              margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+              key: _messageKeys[msgId],
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                children: [
+                  // ========== صورة المستخدم (اليسار للرسائل الواردة) ==========
+                  if (!isMe) ...[
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: theme.primaryColor.withOpacity(0.3),
+                      backgroundImage: senderImage.isNotEmpty
+                          ? NetworkImage(senderImage)
+                          : null,
+                      child: senderImage.isEmpty
+                          ? Icon(Icons.person, size: 16, color: theme.primaryColor)
+                          : null,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+
+                  // ========== الفقاعة ==========
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                      ),
+                      child: Column(
+                        crossAxisAlignment:
+                        isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isHighlighted
+                                  ? theme.primaryColor.withOpacity(0.2)
+                                  : isMe
+                                  ? them.primary
+                                  : isDarkMode
+                                  ? Colors.grey[800]
+                                  : Colors.white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: const Radius.circular(18),
+                                topRight: const Radius.circular(18),
+                                bottomLeft: Radius.circular(isMe ? 18 : 6),
+                                bottomRight: Radius.circular(isMe ? 6 : 18),
                               ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            replyWidget,
-                            if (text.isNotEmpty || fileUrl != null) content,
-                            const SizedBox(height: 4),
-                            Row(
+                              boxShadow: [
+                                if (!isDarkMode && !isMe)
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.15),
+                                    spreadRadius: 1,
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                replyWidget,
+                                if (text.isNotEmpty || fileUrl != null) content,
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: isMe
+                                  ? MainAxisAlignment.end
+                                  : MainAxisAlignment.start,
                               children: [
                                 Text(
                                   time,
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                    color: isMe
-                                        ? theme.disabledColor
-                                        : theme.disabledColor,
+                                    fontSize: 11,
+                                    color: theme.disabledColor,
                                   ),
                                 ),
                                 if (isMe) ...[
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 4),
                                   _buildStatusIcon(status, isMe, theme),
                                 ],
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  // ========== صورة المستخدم (اليمين للرسائل المرسلة) ==========
+                  if (isMe) ...[
+                    const SizedBox(width: 8),
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: theme.primaryColor.withOpacity(0.3),
+                      backgroundImage: senderImage.isNotEmpty
+                          ? NetworkImage(senderImage)
+                          : null,
+                      child: senderImage.isEmpty
+                          ? Icon(Icons.person, size: 16, color: theme.primaryColor)
+                          : null,
+                    ),
+                  ],
+                ],
               ),
             ),
           );
@@ -1614,12 +1780,12 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
         itemBuilder: (context, index) {
           if (index == docs.length) {
             return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation(theme.primaryColor),
-                  ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(theme.primaryColor),
                 ),
+              ),
             );
           }
           final doc = docs[index];
@@ -1886,6 +2052,28 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
         ],
       ),
     );
+  }
+
+  // ============ Logging Functions ============
+
+  void _logDebug(String message) {
+    debugPrint('$_logTag 🔍 $message');
+  }
+
+  void _logInfo(String message) {
+    debugPrint('$_logTag ℹ️ $message');
+  }
+
+  void _logSuccess(String message) {
+    debugPrint('$_logTag ✅ $message');
+  }
+
+  void _logWarning(String message) {
+    debugPrint('$_logTag ⚠️ $message');
+  }
+
+  void _logError(String message) {
+    debugPrint('$_logTag ❌ $message');
   }
 
   @override
