@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:digl/features/admin/models/admin_models.dart';
-import 'package:digl/features/admin/services/admin_service.dart';
-import 'package:digl/features/admin/presentation/pages/doctor_requests_screen.dart';
 import 'package:digl/features/admin/presentation/pages/admin_login_screen.dart';
+import 'package:digl/features/admin/presentation/pages/doctor_requests_screen.dart';
+import 'package:digl/features/admin/services/admin_service.dart';
+import 'package:flutter/material.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   final AdminUser admin;
@@ -28,33 +28,53 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
+      backgroundColor: const Color(0xFFF3F7FF),
       appBar: _buildAppBar(theme),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          _buildDashboardContent(theme),
-          const DoctorRequestsScreen(),
-          _buildSettingsContent(theme),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: IndexedStack(
+          key: ValueKey(_currentIndex),
+          index: _currentIndex,
+          children: [
+            _buildDashboardContent(theme),
+            const DoctorRequestsScreen(),
+            _buildSettingsContent(theme),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomBar(theme),
+    );
+  }
+
+  Widget _buildBottomBar(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 24,
+            offset: const Offset(0, -4),
+          ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
+      child: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: theme.primaryColor,
-        unselectedItemColor: theme.disabledColor,
-        backgroundColor: theme.bottomNavigationBarTheme.backgroundColor ?? theme.cardColor,
+        unselectedItemColor: Colors.grey.shade500,
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
+            icon: Icon(Icons.space_dashboard_rounded),
             label: 'لوحة التحكم',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
+            icon: Icon(Icons.assignment_turned_in_rounded),
             label: 'طلبات الأطباء',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.settings_suggest_rounded),
             label: 'الإعدادات',
           ),
         ],
@@ -64,21 +84,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   PreferredSizeWidget _buildAppBar(ThemeData theme) {
     return AppBar(
-      backgroundColor: theme.primaryColor,
+      backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
+      elevation: 0,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [theme.primaryColor, const Color(0xFF1E4FBF)],
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+          ),
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+        ),
+      ),
       title: const Text('لوحة التحكم الإدارية'),
       centerTitle: true,
-      elevation: 4,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-      ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications),
-          onPressed: () {},
+          icon: const Icon(Icons.notifications_active_outlined),
+          onPressed: _showComingSoon,
         ),
         IconButton(
-          icon: const Icon(Icons.person),
+          icon: const Icon(Icons.account_circle_outlined),
           onPressed: _showAdminProfile,
         ),
       ],
@@ -98,7 +125,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error, color: Colors.red, size: 64),
+                const Icon(Icons.error_outline, color: Colors.red, size: 64),
                 const SizedBox(height: 16),
                 const Text('حدث خطأ في تحميل البيانات', style: TextStyle(fontSize: 16)),
                 const SizedBox(height: 16),
@@ -108,11 +135,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       _statsFuture = AdminService.getAdminStats();
                     });
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.primaryColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: const Text('إعادة المحاولة', style: TextStyle(color: Colors.white)),
+                  child: const Text('إعادة المحاولة'),
                 ),
               ],
             ),
@@ -134,11 +157,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildWelcomeCard(theme),
-                const SizedBox(height: 24),
+                const SizedBox(height: 18),
                 _buildStatsGrid(stats, theme),
-                const SizedBox(height: 24),
+                const SizedBox(height: 18),
                 _buildPendingRequestsCard(stats, theme),
-                const SizedBox(height: 24),
+                const SizedBox(height: 18),
                 _buildQuickActionsCard(theme),
               ],
             ),
@@ -152,37 +175,68 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [theme.primaryColor, theme.colorScheme.secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [theme.primaryColor, const Color(0xFF4D7CFE)],
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: theme.primaryColor.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: theme.primaryColor.withOpacity(0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(20),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.admin_panel_settings_rounded, color: Colors.white, size: 34),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'مرحباً، ${widget.admin.fullName}',
+                      style: const TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.admin.role == 'super_admin' ? 'مسؤول عام • كامل الصلاحيات' : 'مسؤول • صلاحيات تشغيلية',
+                      style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withOpacity(0.14),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.admin_panel_settings, color: Colors.white, size: 36),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: const Row(
               children: [
-                Text(
-                  'مرحباً، ${widget.admin.fullName}',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'دورك: ${widget.admin.role == 'super_admin' ? 'مسؤول عام' : 'مسؤول'}',
-                  style: TextStyle(fontSize: 14, color: Colors.white.withOpacity(0.9)),
+                Icon(Icons.insights_rounded, color: Colors.white, size: 18),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'تابع مؤشرات النظام وراجع الطلبات الجديدة بسرعة.',
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
                 ),
               ],
             ),
@@ -193,22 +247,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildStatsGrid(AdminStats stats, ThemeData theme) {
-    final cardColors = [
-      Colors.blueAccent,
-      Colors.orangeAccent,
-      Colors.greenAccent,
-      Colors.purpleAccent,
-      Colors.tealAccent,
-      Colors.amberAccent,
-    ];
-
     final statsList = [
-      {'title': 'إجمالي الأطباء', 'value': stats.totalDoctors.toString(), 'icon': Icons.local_hospital, 'color': cardColors[0]},
-      {'title': 'طلبات معلقة', 'value': stats.pendingRequests.toString(), 'icon': Icons.assignment_ind, 'color': cardColors[1]},
-      {'title': 'أطباء موافق عليهم', 'value': stats.approvedDoctors.toString(), 'icon': Icons.verified_user, 'color': cardColors[2]},
-      {'title': 'إجمالي المرضى', 'value': stats.totalPatients.toString(), 'icon': Icons.people, 'color': cardColors[3]},
-      {'title': 'المواعيد الإجمالية', 'value': stats.totalAppointments.toString(), 'icon': Icons.calendar_today, 'color': cardColors[4]},
-      {'title': 'متوسط التقييم', 'value': stats.averageDoctorRating.toStringAsFixed(1), 'icon': Icons.star, 'color': cardColors[5]},
+      {'title': 'إجمالي الأطباء', 'value': stats.totalDoctors.toString(), 'icon': Icons.local_hospital_rounded, 'color': const Color(0xFF3A86FF)},
+      {'title': 'طلبات معلقة', 'value': stats.pendingRequests.toString(), 'icon': Icons.pending_actions_rounded, 'color': const Color(0xFFFFA62B)},
+      {'title': 'أطباء موافق عليهم', 'value': stats.approvedDoctors.toString(), 'icon': Icons.verified_user_rounded, 'color': const Color(0xFF2CB67D)},
+      {'title': 'إجمالي المرضى', 'value': stats.totalPatients.toString(), 'icon': Icons.groups_rounded, 'color': const Color(0xFF7B61FF)},
+      {'title': 'إجمالي المواعيد', 'value': stats.totalAppointments.toString(), 'icon': Icons.calendar_month_rounded, 'color': const Color(0xFF00A6A6)},
+      {'title': 'متوسط التقييم', 'value': stats.averageDoctorRating.toStringAsFixed(1), 'icon': Icons.star_rate_rounded, 'color': const Color(0xFFFFC857)},
     ];
 
     return GridView.builder(
@@ -216,35 +261,51 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: 14,
-        crossAxisSpacing: 14,
-        childAspectRatio: 1.1,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.08,
       ),
       itemCount: statsList.length,
       itemBuilder: (context, index) {
         final item = statsList[index];
-        return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 4,
+        final color = item['color'] as Color;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.14),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (item['color'] as Color).withOpacity(0.2),
+                    color: color.withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(item['icon'] as IconData, color: item['color'] as Color, size: 30),
+                  child: Icon(item['icon'] as IconData, color: color, size: 28),
                 ),
-                const SizedBox(height: 14),
-                Text(item['value'] as String, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                Text(
+                  item['value'] as String,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 6),
-                Text(item['title'] as String,
-                    style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7)),
-                    textAlign: TextAlign.center),
+                Text(
+                  item['title'] as String,
+                  style: TextStyle(fontSize: 12.5, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.75)),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
@@ -253,14 +314,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-
-
   Widget _buildPendingRequestsCard(AdminStats stats, ThemeData theme) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.orange.withOpacity(0.1),
-      shadowColor: Colors.orange.withOpacity(0.4),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF4E3), Color(0xFFFFFBF3)],
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFFD6A2)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -269,50 +331,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.orange,
+                    color: const Color(0xFFFFA62B),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.warning_amber, color: Colors.white, size: 28),
+                  child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 26),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'طلبات معلقة',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      const Text('طلبات تحتاج مراجعة', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Text(
-                        'يوجد ${stats.pendingRequests} طلب يحتاج إلى مراجعة',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-                        ),
+                        'يوجد ${stats.pendingRequests} طلب بانتظار قرارك الآن',
+                        style: TextStyle(fontSize: 13.5, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7)),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => setState(() => _currentIndex = 1),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('عرض الطلبات', style: TextStyle(fontSize: 16)),
+            const SizedBox(height: 14),
+            ElevatedButton.icon(
+              onPressed: () => setState(() => _currentIndex = 1),
+              icon: const Icon(Icons.arrow_circle_left_outlined),
+              label: const Text('الانتقال إلى الطلبات'),
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                backgroundColor: const Color(0xFFFFA62B),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -323,46 +375,52 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildQuickActionsCard(ThemeData theme) {
     final actions = [
-      {'icon': Icons.assignment_ind, 'label': 'الطلبات', 'color': Colors.blueAccent, 'tap': () => setState(() => _currentIndex = 1)},
-      {'icon': Icons.person_add, 'label': 'إضافة مسؤول', 'color': Colors.greenAccent, 'tap': () => _showComingSoon()},
-      {'icon': Icons.analytics, 'label': 'التقارير', 'color': Colors.purpleAccent, 'tap': () => _showComingSoon()},
+      {'icon': Icons.assignment_rounded, 'label': 'الطلبات', 'color': const Color(0xFF3A86FF), 'tap': () => setState(() => _currentIndex = 1)},
+      {'icon': Icons.person_add_alt_1_rounded, 'label': 'إضافة مسؤول', 'color': const Color(0xFF2CB67D), 'tap': _showComingSoon},
+      {'icon': Icons.analytics_rounded, 'label': 'التقارير', 'color': const Color(0xFF7B61FF), 'tap': _showComingSoon},
     ];
 
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'إجراءات سريعة',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            const Text('إجراءات سريعة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             GridView.count(
               crossAxisCount: 3,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.95,
               children: actions.map((action) {
-                return ElevatedButton(
-                  onPressed: action['tap'] as VoidCallback,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: action['color'] as Color,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(action['icon'] as IconData, size: 28),
-                      const SizedBox(height: 8),
-                      Text(action['label'] as String, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14)),
-                    ],
+                final color = action['color'] as Color;
+                return InkWell(
+                  onTap: action['tap'] as VoidCallback,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: color.withOpacity(0.1),
+                      border: Border.all(color: color.withOpacity(0.4)),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(action['icon'] as IconData, color: color, size: 28),
+                        const SizedBox(height: 8),
+                        Text(
+                          action['label'] as String,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }).toList(),
@@ -373,54 +431,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  void _showComingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('هذه الميزة قريباً...'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   Widget _buildSettingsContent(ThemeData theme) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Card(
-          elevation: 3,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'معلومات الحساب',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
+                const Text('معلومات الحساب', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 _buildInfoRow('الاسم', widget.admin.fullName, theme),
                 _buildInfoRow('البريد الإلكتروني', widget.admin.email, theme),
                 _buildInfoRow('رقم الهاتف', widget.admin.phoneNumber, theme),
-                _buildInfoRow(
-                  'الدور',
-                  widget.admin.role == 'super_admin' ? 'مسؤول عام' : 'مسؤول',
-                  theme,
-                ),
+                _buildInfoRow('الدور', widget.admin.role == 'super_admin' ? 'مسؤول عام' : 'مسؤول', theme),
               ],
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         ElevatedButton.icon(
           onPressed: _logout,
-          icon: const Icon(Icons.logout),
+          icon: const Icon(Icons.logout_rounded),
           label: const Text('تسجيل الخروج'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.redAccent,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 15),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
@@ -429,8 +471,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildInfoRow(String label, String value, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F9FD),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -438,58 +485,60 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             flex: 1,
             child: Text(
               label,
-              style: TextStyle(fontWeight: FontWeight.w600, color: theme.disabledColor),
+              style: TextStyle(fontWeight: FontWeight.w700, color: theme.disabledColor),
             ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
       ),
     );
+  }
 
+  void _showComingSoon() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('هذه الميزة ستكون متاحة قريباً.'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   void _showAdminProfile() {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(22), topRight: Radius.circular(22)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.fromLTRB(18, 20, 18, 26),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'ملف المسؤول',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
+            const Text('ملف المسؤول', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             ListTile(
-              leading: const Icon(Icons.person),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              leading: const Icon(Icons.person_outline),
               title: const Text('الملف الشخصي'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.security),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              leading: const Icon(Icons.security_outlined),
               title: const Text('الأمان'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.help),
-              title: const Text('المساعدة'),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              leading: const Icon(Icons.support_agent_outlined),
+              title: const Text('الدعم والمساعدة'),
               onTap: () => Navigator.pop(context),
             ),
           ],
