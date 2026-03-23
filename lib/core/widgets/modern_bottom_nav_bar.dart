@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:digl/core/config/theme.dart';
 
 /// 🎨 Bottom Navigation Bar حديث مع Animations
 /// يتميز بتصميم عصري وحركات ناعمة وإبراز الأيقونة النشطة
@@ -17,12 +16,14 @@ class ModernBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       // ✅ ظل علوي لإضفاء عمق
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: theme.shadowColor.withOpacity(0.12),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -35,7 +36,7 @@ class ModernBottomNavBar extends StatelessWidget {
         ),
         child: BottomAppBar(
           elevation: 0,
-          color: Colors.white,
+          color: colorScheme.surface,
           shape: const CircularNotchedRectangle(),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -44,6 +45,7 @@ class ModernBottomNavBar extends StatelessWidget {
               children: List.generate(
                 items.length,
                 (index) => _buildNavItem(
+                  context: context,
                   index: index,
                   isActive: index == currentIndex,
                   item: items[index],
@@ -58,10 +60,13 @@ class ModernBottomNavBar extends StatelessWidget {
 
   /// ✅ بناء عنصر الملاح الواحد
   Widget _buildNavItem({
+    required BuildContext context,
     required int index,
     required bool isActive,
     required BottomNavItem item,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final onSurfaceVariant = colorScheme.onSurfaceVariant;
     return GestureDetector(
       onTap: () => onTap(index),
       child: AnimatedContainer(
@@ -73,7 +78,7 @@ class ModernBottomNavBar extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isActive
-              ? AppTheme.primaryBlue.withOpacity(0.1)
+              ? colorScheme.primary.withOpacity(0.12)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -86,8 +91,8 @@ class ModernBottomNavBar extends StatelessWidget {
               child: Icon(
                 item.icon,
                 color: isActive
-                    ? AppTheme.primaryBlue
-                    : Colors.grey[400],
+                    ? colorScheme.primary
+                    : onSurfaceVariant.withOpacity(0.7),
                 size: isActive ? 26 : 24,
               ),
             ),
@@ -101,7 +106,7 @@ class ModernBottomNavBar extends StatelessWidget {
                 child: Text(
                   item.label,
                   style: TextStyle(
-                    color: AppTheme.primaryBlue,
+                    color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -179,11 +184,13 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: theme.shadowColor.withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -196,7 +203,7 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
         ),
         child: BottomAppBar(
           elevation: 0,
-          color: Colors.white,
+          color: colorScheme.surface,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
             child: Row(
@@ -204,6 +211,7 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
               children: List.generate(
                 widget.items.length,
                 (index) => _buildAdvancedNavItem(
+                  context: context,
                   index: index,
                   isActive: index == widget.currentIndex,
                   controller: _animationControllers[index],
@@ -219,11 +227,14 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
 
   /// ✅ عنصر الملاح المتقدم مع Animations
   Widget _buildAdvancedNavItem({
+    required BuildContext context,
     required int index,
     required bool isActive,
     required AnimationController controller,
     required BottomNavItem item,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final onSurfaceVariant = colorScheme.onSurfaceVariant;
     return GestureDetector(
       onTap: () => widget.onTap(index),
       child: ScaleTransition(
@@ -238,12 +249,12 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isActive
-                    ? AppTheme.primaryBlue.withOpacity(0.2)
+                    ? colorScheme.primary.withOpacity(0.18)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
                 border: isActive
                     ? Border.all(
-                  color: AppTheme.primaryBlue.withOpacity(0.5),
+                  color: colorScheme.primary.withOpacity(0.45),
                   width: 2,
                 )
                     : null,
@@ -251,8 +262,8 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
               child: Icon(
                 item.icon,
                 color: isActive
-                    ? AppTheme.primaryBlue
-                    : Colors.grey[400],
+                    ? colorScheme.primary
+                    : onSurfaceVariant.withOpacity(0.75),
                 size: isActive ? 28 : 24,
               ),
             ),
@@ -265,8 +276,8 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
                 item.label,
                 style: TextStyle(
                   color: isActive
-                      ? AppTheme.primaryBlue
-                      : Colors.grey[500],
+                      ? colorScheme.primary
+                      : onSurfaceVariant.withOpacity(0.8),
                   fontWeight: isActive
                       ? FontWeight.bold
                       : FontWeight.normal,
@@ -284,7 +295,7 @@ class _AdvancedBottomNavBarState extends State<AdvancedBottomNavBar>
                 width: 30,
                 height: 3,
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue,
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -311,14 +322,16 @@ class SimpleBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final onSurfaceVariant = colorScheme.onSurfaceVariant;
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
       elevation: 20,
-      backgroundColor: Colors.white,
-      selectedItemColor: AppTheme.primaryBlue,
-      unselectedItemColor: Colors.grey[400],
+      backgroundColor: colorScheme.surface,
+      selectedItemColor: colorScheme.primary,
+      unselectedItemColor: onSurfaceVariant.withOpacity(0.75),
       selectedLabelStyle: const TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 12,

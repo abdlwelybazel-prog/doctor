@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'consultation_screen.dart';
 import '../../../../core/config/presenceService.dart';
-import '../../../../core/config/medical_theme.dart';
 import '../../../../services/notification_service.dart';
 import 'package:digl/features/model.dart';
 import 'groupConsultationScreen.dart';
@@ -53,12 +52,13 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surfaceContainerLowest,
       appBar: AppBar(
-        backgroundColor: isDarkMode ? MedicalTheme.darkGray800 : MedicalTheme.pure,
-        foregroundColor: isDarkMode ? MedicalTheme.lightGray100 : MedicalTheme.primaryMedicalBlue,
-        elevation: 2,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+        elevation: 0,
         title: const Text('الاستشارة الفورية'),
       ),
       body: accountType == 'doctor'
@@ -66,7 +66,8 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
           : _buildPatientConsultationsForUser(),
       floatingActionButton: FloatingActionButton(
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        backgroundColor: MedicalTheme.primaryMedicalBlue,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         onPressed: (){
           Navigator.push(
             context,
@@ -82,6 +83,7 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
   }
 
   Widget _buildDoctorsSelection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(children: [
       Padding(
         padding: const EdgeInsets.all(12.0),
@@ -90,8 +92,7 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
             controller: _searchController,
             decoration: InputDecoration(
               hintText: 'ابحث عن طبيب...',
-              prefixIcon: const Icon(Icons.search),
-              border: const OutlineInputBorder(),
+              prefixIcon: Icon(Icons.search, color: colorScheme.primary),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(icon: const Icon(Icons.clear), onPressed: () {
                 _searchController.clear();
@@ -107,7 +108,7 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
             items: _specialties.map((sp) => DropdownMenuItem(value: sp, child: Text(sp))).toList(),
             onChanged: (value) =>
                 setState(() => _selectedSpecialty = (value == 'الكل' ? null : value)),
-            decoration: const InputDecoration(labelText: 'اختر التخصص', border: OutlineInputBorder()),
+            decoration: const InputDecoration(labelText: 'اختر التخصص'),
           ),
         ]),
       ),
@@ -143,8 +144,14 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
   }
 
   Widget _buildDoctorCard(UserModel doctor) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
+      elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.5)),
+      ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
@@ -165,8 +172,8 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
         ]),
         trailing: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: MedicalTheme.primaryMedicalBlue,
-            foregroundColor: MedicalTheme.pure,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           onPressed: () => _startConsultation(doctor),
@@ -204,17 +211,18 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
         // حالة الخطأ
         if (snap.hasError) {
           print('❌ [تشخيص] خطأ في الاستعلام: ${snap.error}');
+          final colorScheme = Theme.of(context).colorScheme;
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error, color: MedicalTheme.dangerRed, size: 50),
-                SizedBox(height: 16),
-                Text('خطأ في تحميل البيانات'),
-                SizedBox(height: 8),
+                Icon(Icons.error, color: colorScheme.error, size: 50),
+                const SizedBox(height: 16),
+                const Text('خطأ في تحميل البيانات'),
+                const SizedBox(height: 8),
                 Text(
                   '${snap.error}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -251,17 +259,18 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
         }
 
         if (docs.isEmpty) {
+          final colorScheme = Theme.of(context).colorScheme;
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_outlined, size: 60, color: Colors.grey),
-                SizedBox(height: 16),
-                Text('لا يوجد مرضى حاليًا'),
-                SizedBox(height: 8),
+                Icon(Icons.chat_outlined, size: 60, color: colorScheme.onSurfaceVariant),
+                const SizedBox(height: 16),
+                const Text('لا يوجد مرضى حاليًا'),
+                const SizedBox(height: 8),
                 Text(
                   'سيظهر المرضى هنا عندما يبدأون استشارة معك',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                  style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -306,12 +315,13 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
               );
             } catch (e) {
               print('❌ [تشخيص] خطأ في معالجة الاستشارة: $e');
+              final colorScheme = Theme.of(context).colorScheme;
               return Card(
-                margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                color: Colors.orange[50],
+                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                color: colorScheme.errorContainer,
                 child: ListTile(
-                  leading: Icon(Icons.error, color: Colors.orange),
-                  title: Text('خطأ في تحميل البيانات'),
+                  leading: Icon(Icons.error, color: colorScheme.error),
+                  title: const Text('خطأ في تحميل البيانات'),
                   subtitle: Text('$e'),
                 ),
               );
@@ -391,6 +401,7 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
     required String currentUserId,
     required bool isDoctor,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     // استخدام StreamBuilder للحصول على العدد المحدث
     return StreamBuilder<int>(
       stream: _getUnreadMessagesCount(consultation.id, currentUserId),
@@ -398,7 +409,15 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
         final actualUnreadCount = countSnapshot.data ?? unreadCount;
         final shouldShowBadge = actualUnreadCount > 0 || hasNewMessages;
 
-        return ListTile(
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.4)),
+          ),
+          child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           leading: Stack(
             children: [
               CircleAvatar(
@@ -414,14 +433,14 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: MedicalTheme.dangerRed,
+                      color: colorScheme.error,
                       shape: BoxShape.circle,
-                      border: Border.all(color: MedicalTheme.pure, width: 2),
+                      border: Border.all(color: colorScheme.surface, width: 2),
                     ),
                     child: Text(
                       actualUnreadCount > 99 ? '99+' : actualUnreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colorScheme.onError,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -458,8 +477,8 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
               if (actualUnreadCount > 0)
                 Text(
                   '$actualUnreadCount رسالة جديدة',
-                  style: const TextStyle(
-                    color: MedicalTheme.infoBlue,
+                  style: TextStyle(
+                    color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -467,18 +486,18 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
               if (consultation.lastMessageTime != null)
                 Text(
                   _formatTime(consultation.lastMessageTime!),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
             ],
           ),
-          trailing: const Icon(Icons.chat),
+          trailing: Icon(Icons.chat_bubble_rounded, color: colorScheme.primary),
           onTap: () {
             _openConsultation(consultation, currentUserId);
           },
-        );
+        ));
       },
     );
   }
@@ -621,7 +640,7 @@ class _InstantConsultationScreenState extends State<InstantConsultationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('فشل: ${e.toString()}'),
-          backgroundColor: MedicalTheme.dangerRed,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
