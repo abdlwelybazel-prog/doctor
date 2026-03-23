@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:digl/core/config/medical_theme.dart';
 import 'package:digl/core/config/theme_provider.dart';
 import 'package:digl/core/config/theme_helper.dart';
 import 'package:digl/services/user_role_service.dart';
@@ -20,7 +18,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen>
     with SingleTickerProviderStateMixin {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // ✅ متغيرات الحالة
   bool isLoading = true;
@@ -228,10 +225,15 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('الإعدادات'),
         elevation: 0,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -264,12 +266,12 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   /// ✅ قسم معلومات الحساب
   Widget _buildAccountInfoSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Card(
-      elevation: 2,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? MedicalTheme.darkGray900
-          : MedicalTheme.pure,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -282,7 +284,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Divider(height: 16),
+            Divider(height: 16, color: colorScheme.outlineVariant),
             const SizedBox(height: 16),
 
             // صورة الملف الشخصي
@@ -295,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ? NetworkImage(profileImageUrl!)
                         : null,
                     child: profileImageUrl == null
-                        ? const Icon(Icons.person, size: 50)
+                        ? Icon(Icons.person, size: 50, color: colorScheme.primary)
                         : null,
                   ),
                   const SizedBox(height: 8),
@@ -342,12 +344,11 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   /// ✅ قسم الأمان
   Widget _buildSecuritySection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      elevation: 2,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? MedicalTheme.darkGray900
-          : MedicalTheme.pure,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -360,14 +361,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Divider(height: 16),
+            Divider(height: 16, color: colorScheme.outlineVariant),
             const SizedBox(height: 8),
 
             // زر تغيير كلمة المرور
             ListTile(
-              leading: const Icon(Icons.lock),
+              leading: Icon(Icons.lock, color: colorScheme.primary),
               title: const Text('تغيير كلمة المرور'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: colorScheme.onSurfaceVariant),
               onTap: _showChangePasswordDialog,
             ),
           ],
@@ -381,8 +382,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
         return Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+          color: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -395,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Divider(height: 16),
+                Divider(height: 16, color: Theme.of(context).colorScheme.outlineVariant),
                 const SizedBox(height: 8),
 
                 // ✅ تغيير الثيمة (فاتح / داكن / نظام)
@@ -452,7 +454,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 ),
 
                 const SizedBox(height: 24),
-                const Divider(),
+                Divider(color: Theme.of(context).colorScheme.outlineVariant),
                 const SizedBox(height: 8),
 
                 // ✅ تفعيل الإخطارات
@@ -461,7 +463,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     _enableNotifications
                         ? Icons.notifications_active
                         : Icons.notifications_off,
-                    color: MedicalTheme.primaryMedicalBlue,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: const Text('تفعيل الإخطارات'),
                   trailing: Switch(
@@ -482,12 +484,11 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   /// ✅ قسم أخرى
   Widget _buildMiscellaneousSection() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      elevation: 2,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? MedicalTheme.darkGray900
-          : MedicalTheme.pure,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 0,
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -500,53 +501,53 @@ class _SettingsScreenState extends State<SettingsScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Divider(height: 16),
+            Divider(height: 16, color: colorScheme.outlineVariant),
             const SizedBox(height: 8),
 
             // عن التطبيق
             ListTile(
-              leading: const Icon(Icons.info),
+              leading: Icon(Icons.info, color: colorScheme.primary),
               title: const Text('عن التطبيق'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: colorScheme.onSurfaceVariant),
               onTap: () {
                 _showSnackBar('الإصدار: 1.0.0');
               },
             ),
 
-            const Divider(),
+            Divider(color: colorScheme.outlineVariant),
 
             // سياسة الخصوصية
             ListTile(
-              leading: const Icon(Icons.privacy_tip),
+              leading: Icon(Icons.privacy_tip, color: colorScheme.primary),
               title: const Text('سياسة الخصوصية'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: colorScheme.onSurfaceVariant),
               onTap: () {
                 _showSnackBar('سيتم فتح سياسة الخصوصية');
               },
             ),
 
-            const Divider(),
+            Divider(color: colorScheme.outlineVariant),
 
             // الدعم الفني
             ListTile(
-              leading: const Icon(Icons.support_agent),
+              leading: Icon(Icons.support_agent, color: colorScheme.primary),
               title: const Text('الدعم الفني'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: colorScheme.onSurfaceVariant),
               onTap: () {
                 _showSnackBar('support@digl.com');
               },
             ),
 
-            const Divider(),
+            Divider(color: colorScheme.outlineVariant),
 
             // تسجيل الخروج
             ListTile(
-              leading: const Icon(Icons.logout, color: MedicalTheme.dangerRed),
-              title: const Text(
+              leading: Icon(Icons.logout, color: colorScheme.error),
+              title: Text(
                 'تسجيل الخروج',
-                style: TextStyle(color: MedicalTheme.dangerRed),
+                style: TextStyle(color: colorScheme.error),
               ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: colorScheme.onSurfaceVariant),
               onTap: _logout,
             ),
           ],
@@ -561,17 +562,16 @@ class _SettingsScreenState extends State<SettingsScreen>
     required String value,
     required IconData icon,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? MedicalTheme.darkGray800
-            : MedicalTheme.lightGray100,
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.35),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Icon(icon, color: MedicalTheme.primaryMedicalBlue),
+          Icon(icon, color: colorScheme.primary),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

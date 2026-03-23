@@ -217,29 +217,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
   PreferredSizeWidget buildAppBar() {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return AppBar(
-      backgroundColor: theme.appBarTheme.backgroundColor ?? theme.primaryColor,
-      elevation: 2,
-      title: Text("digl", style: theme.textTheme.headline6?.copyWith(color: Colors.white)),
+      backgroundColor: colorScheme.surface,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      title: Text(
+        "digl",
+        style: theme.textTheme.headlineSmall?.copyWith(
+          color: colorScheme.onSurface,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
       actions: [
         Stack(
           children: [
-            IconButton(
-              icon: Icon(Icons.notifications, color: Colors.white),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            Container(
+              margin: const EdgeInsetsDirectional.only(end: 8, top: 6, bottom: 6),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withOpacity(0.55),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: IconButton(
+                icon: Icon(Icons.notifications_none_rounded, color: colorScheme.primary),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                ),
               ),
             ),
             if (unreadNotifications > 0)
               Positioned(
-                right: 8,
-                top: 8,
+                right: 12,
+                top: 10,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                  child: Text(unreadNotifications.toString(),
-                      style: const TextStyle(color: Colors.white, fontSize: 12)),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colorScheme.error,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    unreadNotifications.toString(),
+                    style: TextStyle(
+                      color: colorScheme.onError,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -259,65 +283,80 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final theme = Theme.of(context);
 
-    return Theme(
-      data: theme.copyWith(
-        appBarTheme: theme.appBarTheme.copyWith(
-          backgroundColor: theme.primaryColor,
-          foregroundColor: Colors.white,
-        ),
-        scaffoldBackgroundColor: theme.scaffoldBackgroundColor,
-        bottomNavigationBarTheme: theme.bottomNavigationBarTheme.copyWith(
-          backgroundColor: theme.colorScheme.surface,
-          selectedItemColor: theme.primaryColor,
-          unselectedItemColor: theme.disabledColor,
-        ),
-      ),
-      child: Scaffold(
-        appBar: _currentIndex == 0 ? buildAppBar() : null,
-        body: IndexedStack(
-          index: _currentIndex,
-          children: [
-            RefreshIndicator(
-              onRefresh: _loadInitialData,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: [
-                    WelcomeMoodSection(
-                      userName: userName,
-                      userType: userType,
-                      selectedMood: selectedMood,
-                      onMoodSelected: updateMood,
-                    ),
-                    UpcomingAppointmentsWidget(appointments: appointments),
-                    UpcomingMedicationsSection(medications: medications),
-                    if (currentUserModel!.isPatient) const DoctorsListWidget(),
-                    const MedicalTipsWidget(),
-                    const MedicalNewsWidget(),
-                  ],
-                ),
+    final colorScheme = theme.colorScheme;
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _currentIndex == 0 ? buildAppBar() : null,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          RefreshIndicator(
+            onRefresh: _loadInitialData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  WelcomeMoodSection(
+                    userName: userName,
+                    userType: userType,
+                    selectedMood: selectedMood,
+                    onMoodSelected: updateMood,
+                  ),
+                  UpcomingAppointmentsWidget(appointments: appointments),
+                  UpcomingMedicationsSection(medications: medications),
+                  if (currentUserModel!.isPatient) const DoctorsListWidget(),
+                  const MedicalTipsWidget(),
+                  const MedicalNewsWidget(),
+                ],
               ),
             ),
-            currentUserModel!.isPatient
-                ? const BookAppointmentScreen()
-                : const AppointmentsListScreen(),
-            const InstantConsultationScreen(),
-            const MedicationsScreen(),
-            const ProfileScreen(),
+          ),
+          currentUserModel!.isPatient
+              ? const BookAppointmentScreen()
+              : const AppointmentsListScreen(),
+          const InstantConsultationScreen(),
+          const MedicationsScreen(),
+          const ProfileScreen(),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withOpacity(0.12),
+              blurRadius: 20,
+              offset: const Offset(0, -6),
+            ),
           ],
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(22),
+            topRight: Radius.circular(22),
+          ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(22),
+            topRight: Radius.circular(22),
+          ),
+          child: BottomNavigationBar(
+            backgroundColor: colorScheme.surface,
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
           type: BottomNavigationBarType.fixed,
+            selectedItemColor: colorScheme.primary,
+            unselectedItemColor: colorScheme.onSurfaceVariant,
+            showUnselectedLabels: true,
+            elevation: 0,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'المواعيد'),
-            BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'استشارة'),
-            BottomNavigationBarItem(icon: Icon(Icons.medication), label: 'الأدوية'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'حسابي'),
+            BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'الرئيسية'),
+            BottomNavigationBarItem(icon: Icon(Icons.calendar_month_rounded), label: 'المواعيد'),
+            BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_rounded), label: 'استشارة'),
+            BottomNavigationBarItem(icon: Icon(Icons.medication_liquid_rounded), label: 'الأدوية'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'حسابي'),
           ],
         ),
+      ),
       ),
     );
   }
@@ -343,15 +382,21 @@ class WelcomeMoodSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [theme.primaryColor, theme.colorScheme.secondary]),
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.primary,
+            colorScheme.primary.withOpacity(0.8),
+          ],
+        ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: theme.primaryColor.withOpacity(0.2),
+              color: colorScheme.primary.withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],
@@ -383,17 +428,24 @@ class WelcomeMoodSection extends StatelessWidget {
   }
 
   Widget _buildMoodButton(IconData icon, String label, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
     final isSelected = selectedMood == label;
     return Expanded(
       child: ElevatedButton.icon(
         onPressed: () => onMoodSelected(label),
-        icon: Icon(icon, color: isSelected ? Colors.white : theme.primaryColor),
-        label: Text(label, style: TextStyle(color: isSelected ? Colors.white : theme.primaryColor, fontSize: 14)),
+        icon: Icon(icon, color: isSelected ? colorScheme.onPrimary : colorScheme.primary),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? colorScheme.onPrimary : colorScheme.primary,
+            fontSize: 14,
+          ),
+        ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? theme.primaryColor : theme.colorScheme.surface,
+          backgroundColor: isSelected ? colorScheme.primary : colorScheme.surface,
           padding: const EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          side: isSelected ? null : BorderSide(color: theme.primaryColor),
+          side: isSelected ? null : BorderSide(color: colorScheme.primary),
         ),
       ),
     );
